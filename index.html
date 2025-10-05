@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Solar System Visualizer</title>
+  <style>
+    html,body{height:100%;margin:0;font-family:system-ui,Segoe UI,Roboto,Arial}
+    #app{display:flex;height:100vh}
+    aside{width:320px;background:#0b1220;color:#e6eef8;padding:16px;box-sizing:border-box}
+    main{flex:1;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#021024,#000)}
+    canvas{background:transparent;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.6)}
+    h1{font-size:18px;margin:0 0 12px}
+    .control{margin:8px 0}
+    button{padding:8px 12px;border-radius:8px;border:0;background:#1e6cff;color:white;cursor:pointer}
+    input[type=range]{width:100%}
+    .planet-list{margin-top:12px;max-height:40vh;overflow:auto}
+    .planet-item{padding:6px;border-radius:6px;margin:6px 0;background:rgba(255,255,255,0.03);cursor:pointer}
+  </style>
+</head>
+<body>
+  <div id="app">
+    <aside>
+      <h1>Solar System Visualizer</h1>
+      <div class="control">
+        <button id="playPause">Pause</button>
+        <label style="margin-left:8px">Time scale: <span id="timeScaleLabel">1x</span></label>
+      </div>
+      <div class="control">
+        <input id="timeScale" type="range" min="0" max="100" value="10" />
+      </div>
+      <div class="control">
+        <label><input id="showOrbits" type="checkbox" checked /> Show orbits</label>
+      </div>
+      <div class="control">
+        <label>Scale (zoom)</label>
+        <input id="zoom" type="range" min="0.05" max="2.5" step="0.01" value="0.55" />
+      </div>
+      <div class="planet-list" id="planetList"></div>
+    </aside>
+    <main>
+      <canvas id="canvas" width="1000" height="700"></canvas>
+    </main>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let planets = [];
+
+    // UI
+    const playPauseBtn = document.getElementById('playPause');
+    const timeScale = document.getElementById('timeScale');
+    const timeScaleLabel = document.getElementById('timeScaleLabel');
+    const showOrbits = document.getElementById('showOrbits');
+    const zoom = document.getElementById('zoom');
+    const planetList = document.getElementById('planetList');
+
+    let running = true;
+    let simDays = 0; // simulation time in days
+
+    async function loadPlanets(){
+      const res = await fetch('/api/planets');
+      const data = await res.json();
+      planets = data.planets;
+      buildPlanetList();
+    }
+
+    function buildPlanetList(){
+      planetList.innerHTML='';
+      planets.forEach((p,i)=>{
+        const div = document.createElement('div');
+        div.className='planet-item';
+        div.innerText = p.name + ' — ' + p.distance_au + ' AU';
+        div.onclick = ()=>{ focusPlanetIndex = i; }
+        planetList.appendChild(div);
+      });
+    }
+
+    const SUN_RADIUS = 25;
+    const AU_IN_PIXELS = 120;
+    let focusPlanetIndex = -1;
+
+    function draw(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const cx = canvas.width/2;
+      const cy = canvas.height/2;
+      const scale = AU_IN_PIXELS * parseFloat(zoom.value);
+
+      let offsetX = 0, offsetY = 0;
+      if(focusPlanetIndex >=0){
+        const p = planets[focusPlanetIndex];
+        const angle = 2*Math.PI*(simDays % p.period_days)/p.period_days;
+        const px = Math.cos(angle)*p.distance_au*scale;
+        const py = Math.sin(angle)*p.distance_au*scale;
+        offsetX = px; offsetY = py;
+      }
+
+      if(showOrbits.checked){
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+        planets.forEach(p=>{
+          ctx.beginPath();
+          ctx.ellipse(cx - offsetX, cy - offsetY, p.distance_au*scale, p.distance_au*scale, 0, 0, Math.PI*2);
+          ctx.stroke();
+        });
+        ctx.restore();
+      }
+
+      const sunX = cx - offsetX;
+      const sunY = cy - offsetY;
+      const radial = ctx.createRadialGradient(sunX, sunY, 4, sunX, sunY, SUN_RADIUS*3);
+      radial.addColorStop(0,'#fff9c4');
+      radial.addColorStop(0.4,'#ffd54f');
+      radial.addColorStop(1,'rgba(255,160,0,0.04)');
+      ctx.fillStyle = radial;
+      ctx.beginPath();
+      ctx.arc(sunX,sunY,SUN_RADIUS,0,Math.PI*2);
+      ctx.fill();
+
+      planets.forEach(p=>{
+        const angle = 2*Math.PI*(simDays % p.period_days)/p.period_days;
+        const x = cx + Math.cos(angle)*p.distance_au*scale - offsetX;
+        const y = cy + Math.sin(angle)*p.distance_au*scale - offsetY;
+        const r = Math.max(3, Math.log10(p.radius_km)*1.8);
+        ctx.beginPath();
+        ctx.fillStyle = p.color;
+        ctx.arc(x,y,r,0,Math.PI*2);
+        ctx.fill();
+        ctx.font = '12px system-ui';
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.fillText(p.name, x + r + 6, y + 4);
+      });
+
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      ctx.fillRect(10,10,190,56);
+      ctx.fillStyle = 'white';
+      ctx.font = '13px system-ui';
+      ctx.fillText('Sim days: ' + Math.floor(simDays), 20, 32);
+      ctx.fillText('Time speed: ' + timeScaleLabel.innerText, 20, 52);
+    }
+
+    function step(dt){
+      const slider = parseFloat(timeScale.value);
+      const multiplier = Math.pow(10, (slider-50)/12);
+      timeScaleLabel.innerText = multiplier.toFixed(2) + 'x';
+      simDays += dt * multiplier;
+    }
+
+    let last = performance.now();
+    function loop(now){
+      const dtSec = (now - last)/1000;
+      last = now;
+      if(running) step(dtSec);
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    playPauseBtn.onclick = ()=>{
+      running = !running;
+      playPauseBtn.innerText = running ? 'Pause' : 'Play';
+    };
+
+    loadPlanets().then(()=>{ requestAnimationFrame(loop); });
+
+    function resize(){
+      canvas.width = Math.min(window.innerWidth - 360, 1400);
+      canvas.height = Math.max(window.innerHeight - 80, 400);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+  </script>
+</body>
+</html>
