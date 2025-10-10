@@ -1,333 +1,359 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Solar System Visualizer — Vibrant</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --sidebar-w:320px;
-    --bg1:#020111;
-    --bg2:#000814;
-    --panel:rgba(8,12,20,0.6);
-    --accent:#ff7a18;
-    --muted:rgba(255,255,255,0.12);
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:'Poppins',system-ui,Segoe UI,Roboto,Arial,sans-serif;color:#e9f0ff}
-  body{display:flex;background:radial-gradient(1200px 600px at 20% 10%, #001022 0%, #000814 18%, #000010 60%), linear-gradient(180deg,var(--bg1),var(--bg2));}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Solar System Visualizer — Vibrant</title>
+  <meta name="description" content="Interactive, vibrant solar system visualizer by A. RAKESH — orbits, labels, trails, stars, keyboard shortcuts and lots of controls.">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --sidebar-w: 320px;
+      --bg1: #020111;
+      --bg2: #000814;
+      --panel: rgba(8,12,20,0.6);
+      --accent: #ff7a18;
+      --muted: rgba(255,255,255,0.12);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; font-family: 'Poppins', system-ui, Segoe UI, Roboto, Arial, sans-serif; color: #e9f0ff; }
+    body { display: flex; background: radial-gradient(1200px 600px at 20% 10%, #001022 0%, #000814 18%, #000010 60%), linear-gradient(180deg, var(--bg1), var(--bg2)); }
 
-  #sidebar{
-    width:var(--sidebar-w);
-    min-width:240px;
-    max-width:420px;
-    padding:22px;
-    backdrop-filter: blur(8px);
-    background: linear-gradient(180deg, rgba(8,10,20,0.65), rgba(6,8,12,0.55));
-    border-right:1px solid rgba(255,255,255,0.04);
-    display:flex;flex-direction:column;gap:14px;
-  }
-  #brand{display:flex;align-items:center;gap:12px}
-  .logo{
-    width:46px;height:46px;border-radius:10px;display:inline-grid;place-items:center;font-weight:700;background:linear-gradient(135deg,#ffcc33,#ff4477);color:#081018;box-shadow:0 6px 18px rgba(255,118,102,0.12);
-  }
-  h1{font-size:1.15rem;margin:0}
-  p.lead{margin:0;color:rgba(230,240,255,0.8);font-size:0.85rem}
+    /* Sidebar */
+    #sidebar {
+      width: var(--sidebar-w);
+      min-width: 240px;
+      max-width: 420px;
+      padding: 22px;
+      backdrop-filter: blur(8px);
+      background: linear-gradient(180deg, rgba(8,10,20,0.65), rgba(6,8,12,0.55));
+      border-right: 1px solid rgba(255,255,255,0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    #brand { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 46px;
+      height: 46px;
+      border-radius: 10px;
+      display: inline-grid;
+      place-items: center;
+      font-weight: 700;
+      background: linear-gradient(135deg,#ffcc33,#ff4477);
+      color: #081018;
+      box-shadow: 0 6px 18px rgba(255,118,102,0.12);
+    }
+    h1 { font-size: 1.15rem; margin: 0; }
+    p.lead { margin: 0; color: rgba(230,240,255,0.8); font-size: 0.85rem; }
 
-  .controls{background:var(--panel);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);}
-  .row{display:flex;align-items:center;gap:10px;margin:10px 0}
-  label{font-size:0.85rem;color:#dbe9ff}
-  input[type=range]{width:100%}
-  .muted{font-size:0.8rem;color:rgba(220,230,255,0.6)}
+    .controls { background: var(--panel); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); }
+    .row { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+    label { font-size: 0.85rem; color: #dbe9ff; }
+    input[type=range] { width: 100%; }
+    .muted { font-size: 0.8rem; color: rgba(220,230,255,0.6); }
 
-  .footer{margin-top:auto;text-align:center;font-size:0.85rem;color:#cfe8ff}
-  .btn{padding:8px 10px;border-radius:10px;border:0;background:linear-gradient(90deg,#ff8a00,#ff2d95);color:white;font-weight:600;cursor:pointer}
-  .small{font-size:0.85rem;padding:6px 8px}
-  .toggle{display:inline-flex;align-items:center;gap:8px}
+    .footer { margin-top: auto; text-align: center; font-size: 0.85rem; color: #cfe8ff; }
+    .btn { padding: 8px 10px; border-radius: 10px; border: 0; background: linear-gradient(90deg,#ff8a00,#ff2d95); color: white; font-weight: 600; cursor: pointer; }
+    .small { font-size: 0.85rem; padding: 6px 8px; }
+    .toggle { display: inline-flex; align-items: center; gap: 8px; }
 
-  #canvasWrap{flex:1;position:relative;overflow:hidden}
-  canvas{position:absolute;left:0;top:0;display:block}
+    /* Canvas container */
+    #canvasWrap { flex: 1; position: relative; overflow: hidden; }
+    canvas { position: absolute; left: 0; top: 0; display: block; }
 
-  #tooltip{position:absolute;pointer-events:none;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);color:#fff;font-size:0.85rem;border:1px solid rgba(255,255,255,0.06)}
+    /* Info Tooltip */
+    #tooltip { position: absolute; pointer-events: none; padding: 8px 10px; border-radius: 8px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); color: #fff; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.06); }
 
-  @media (max-width:900px){#sidebar{width:280px}}
-  @media (max-width:700px){
-    body{flex-direction:column}
-    #sidebar{width:100%;display:flex;flex-direction:row;gap:12px;align-items:center;padding:12px}
-    #canvasWrap{height:calc(100vh - 88px)}
-  }
-</style>
+    /* Responsive */
+    @media (max-width: 900px) { #sidebar { width: 280px; } }
+    @media (max-width: 700px) {
+      body { flex-direction: column; }
+      #sidebar { width: 100%; display: flex; flex-direction: row; gap: 12px; align-items: center; padding: 12px; }
+      #canvasWrap { height: calc(100vh - 88px); }
+    }
+  </style>
 </head>
+
+<audio id="bgMusic" loop>
+  <source src="Cornfield_Chase.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+
 <body>
-<aside id="sidebar">
-  <div id="brand">
-    <div class="logo">AR</div>
-    <div>
-      <h1>Solar System Visualizer</h1>
-      <p class="lead">Vibrant, interactive — made by <b>A. RAKESH</b></p>
+  <aside id="sidebar">
+    <div id="brand">
+      <div class="logo">AR</div>
+      <div>
+        <h1>Solar System Visualizer</h1>
+        <p class="lead">Vibrant, interactive — made by <b>A. RAKESH</b></p>
+      </div>
     </div>
+
+    <div class="controls">
+      <div class="row">
+        <label for="pauseCheckbox">Pause (Space)</label>
+        <input id="pauseCheckbox" type="checkbox" style="margin-left:auto">
+      </div>
+
+      <div class="row">
+        <label for="timeScale">Time Scale</label>
+        <input id="timeScale" type="range" min="0" max="10" step="0.1" value="1">
+        <div id="scaleValue" class="muted" style="min-width:48px;text-align:right">1.0x</div>
+      </div>
+
+      <div class="row">
+        <label for="musicVolume">Music Volume</label>
+        <input id="musicVolume" type="range" min="0" max="1" step="0.01" value="0.3">
+      </div>
+
+      <div class="row">
+        <label for="zoom">Zoom</label>
+        <input id="zoom" type="range" min="0.3" max="3" step="0.05" value="1">
+        <div id="zoomValue" class="muted" style="min-width:48px;text-align:right">1.00</div>
+      </div>
+
+      <div class="row toggle">
+        <input id="showOrbits" type="checkbox" checked>
+        <label for="showOrbits">Show Orbits</label>
+      </div>
+
+      <div class="row toggle">
+        <input id="showTrails" type="checkbox">
+        <label for="showTrails">Show Trails</label>
+      </div>
+
+      <div class="row toggle">
+        <input id="showLabels" type="checkbox" checked>
+        <label for="showLabels">Show Labels</label>
+      </div>
+
+      <div class="row">
+        <label for="centerSelect">Center On</label>
+        <select id="centerSelect" style="margin-left:auto;background:transparent;color:#e9f0ff;border:1px solid rgba(255,255,255,0.04);padding:6px;border-radius:8px">
+          <option value="sun">Sun</option>
+          <option value="earth">Earth</option>
+          <option value="mars">Mars</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label for="dateSlider">Timeline (days)</label>
+        <input id="dateSlider" type="range" min="0" max="3650" value="0">
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="resetBtn" class="btn small">Reset View</button>
+        <button id="snapshotBtn" class="small" style="background:transparent;border:1px solid var(--muted);color:#cfe8ff;border-radius:8px">Save PNG</button>
+      </div>
+
+      <div id="dateTime" style="text-align:center;margin-top:8px;font-size:0.85rem;color:rgba(220,230,255,0.7)"></div>
+
+      <div style="margin-top:10px;font-size:0.85rem;color:rgba(220,230,255,0.7)">Keyboard: <span class="muted">Space = Pause • +/- = Zoom • S = Save</span></div>
+    </div>
+
+    <div class="footer">✨ Made with ❤️ — <b>A. RAKESH</b> ✨</div>
+  </aside>
+
+  <div id="canvasWrap">
+    <canvas id="solarCanvas"></canvas>
+    <div id="tooltip" style="display:none"></div>
   </div>
 
-  <div class="controls">
-    <div class="row">
-      <label for="pauseCheckbox">Pause (Space)</label>
-      <input id="pauseCheckbox" type="checkbox" style="margin-left:auto">
-    </div>
+  <script>
+    // --- Elements ---
+    const canvas = document.getElementById('solarCanvas');
+    const ctx = canvas.getContext('2d');
+    const sidebar = document.getElementById('sidebar');
+    const tooltip = document.getElementById('tooltip');
 
-    <div class="row">
-      <label for="timeScale">Time Scale</label>
-      <input id="timeScale" type="range" min="0" max="10" step="0.1" value="1">
-      <div id="scaleValue" class="muted" style="min-width:48px;text-align:right">1.0x</div>
-    </div>
+    const pauseCheckbox = document.getElementById('pauseCheckbox');
+    const timeScaleInput = document.getElementById('timeScale');
+    const scaleValue = document.getElementById('scaleValue');
+    const zoomInput = document.getElementById('zoom');
+    const zoomValue = document.getElementById('zoomValue');
+    const showOrbitsInput = document.getElementById('showOrbits');
+    const showTrailsInput = document.getElementById('showTrails');
+    const showLabelsInput = document.getElementById('showLabels');
+    const centerSelect = document.getElementById('centerSelect');
+    const resetBtn = document.getElementById('resetBtn');
+    const snapshotBtn = document.getElementById('snapshotBtn');
+    const dateSlider = document.getElementById('dateSlider');
+    const dateTime = document.getElementById('dateTime');
 
-    <div class="row">
-      <label for="zoom">Zoom</label>
-      <input id="zoom" type="range" min="0.3" max="3" step="0.05" value="1">
-      <div id="zoomValue" class="muted" style="min-width:48px;text-align:right">1.00</div>
-    </div>
+    const bgMusic = document.getElementById('bgMusic');
+    const musicVolume = document.getElementById('musicVolume');
+    bgMusic.volume = parseFloat(musicVolume.value);
 
-    <div class="row toggle">
-      <input id="showOrbits" type="checkbox" checked>
-      <label for="showOrbits">Show Orbits</label>
-    </div>
-
-    <div class="row toggle">
-      <input id="showTrails" type="checkbox">
-      <label for="showTrails">Show Trails</label>
-    </div>
-
-    <div class="row toggle">
-      <input id="showLabels" type="checkbox" checked>
-      <label for="showLabels">Show Labels</label>
-    </div>
-
-    <div class="row">
-      <label for="centerSelect">Center On</label>
-      <select id="centerSelect" style="margin-left:auto;background:transparent;color:#e9f0ff;border:1px solid rgba(255,255,255,0.04);padding:6px;border-radius:8px">
-        <option value="sun">Sun</option>
-        <option value="earth">Earth</option>
-        <option value="mars">Mars</option>
-      </select>
-    </div>
-
-    <div class="row">
-      <label for="timeline">Timeline</label>
-      <input id="timeline" type="range" min="-365" max="365" step="1" value="0">
-      <div id="dateDisplay" class="muted" style="min-width:48px;text-align:right"></div>
-    </div>
-
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <button id="resetBtn" class="btn small">Reset View</button>
-      <button id="snapshotBtn" class="small" style="background:transparent;border:1px solid var(--muted);color:#cfe8ff;border-radius:8px">Save PNG</button>
-    </div>
-
-    <div style="margin-top:10px;font-size:0.85rem;color:rgba(220,230,255,0.7)">Keyboard: <span class="muted">Space = Pause • +/- = Zoom • S = Save</span></div>
-  </div>
-
-  <div class="footer">✨ Made with ❤️ — <b>A. RAKESH</b> ✨</div>
-</aside>
-
-<div id="canvasWrap">
-  <canvas id="solarCanvas"></canvas>
-  <div id="tooltip" style="display:none"></div>
-</div>
-
-<script>
-const canvas=document.getElementById('solarCanvas');
-const ctx=canvas.getContext('2d');
-const sidebar=document.getElementById('sidebar');
-const tooltip=document.getElementById('tooltip');
-
-const pauseCheckbox=document.getElementById('pauseCheckbox');
-const timeScaleInput=document.getElementById('timeScale');
-const scaleValue=document.getElementById('scaleValue');
-const zoomInput=document.getElementById('zoom');
-const zoomValue=document.getElementById('zoomValue');
-const showOrbitsInput=document.getElementById('showOrbits');
-const showTrailsInput=document.getElementById('showTrails');
-const showLabelsInput=document.getElementById('showLabels');
-const centerSelect=document.getElementById('centerSelect');
-const resetBtn=document.getElementById('resetBtn');
-const snapshotBtn=document.getElementById('snapshotBtn');
-const timelineInput=document.getElementById('timeline');
-const dateDisplay=document.getElementById('dateDisplay');
-
-let cw=0,ch=0;
-function resize(){
-  const rect=sidebar.getBoundingClientRect();
-  const sidebarW=rect.width||parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-w'))||320;
-  cw=canvas.width=Math.max(300,window.innerWidth-sidebarW);
-  ch=canvas.height=window.innerHeight;
-  if(window.innerWidth<=700){cw=canvas.width=window.innerWidth;ch=canvas.height=Math.max(300,window.innerHeight-88);}
-  canvas.style.width=cw+'px';canvas.style.height=ch+'px';
-}
-window.addEventListener('resize',resize);
-resize();
-
-const stars=[];
-function generateStars(n=250){
-  stars.length=0;
-  for(let i=0;i<n;i++){
-    stars.push({x:Math.random()*cw,y:Math.random()*ch,r:Math.random()*1.4+0.2,a:Math.random()*0.8+0.2,flick:Math.random()*0.02});
-  }
-}
-generateStars(360);
-
-const planets=[
-  {name:'Mercury', color:'#bdbdbd', dist:0.39, size:3.2, speed:4.15},
-  {name:'Venus', color:'#f1c40f', dist:0.72, size:5.8, speed:1.62},
-  {name:'Earth', color:'#2ea3ff', dist:1.00, size:6.6, speed:1.00},
-  {name:'Mars', color:'#ff6b3d', dist:1.52, size:5.4, speed:0.53},
-  {name:'Jupiter', color:'#e6caa3', dist:5.20, size:12.2, speed:0.084},
-  {name:'Saturn', color:'#f0d7b8', dist:9.58, size:10.5, speed:0.034, rings:true},
-  {name:'Uranus', color:'#7fe0d8', dist:19.2, size:8.8, speed:0.0119},
-  {name:'Neptune', color:'#547aff', dist:30.05, size:8.6, speed:0.0061},
-];
-planets.forEach(p=>p.angle=Math.random()*Math.PI*2);
-
-const trails=planets.map(()=>[]);
-const maxTrailPoints=120;
-
-let paused=false;
-let timeScale=parseFloat(timeScaleInput.value)||1;
-let zoom=parseFloat(zoomInput.value)||1;
-let showOrbits=showOrbitsInput.checked;
-let showTrails=showTrailsInput.checked;
-let showLabels=showLabelsInput.checked;
-let centerOn=centerSelect.value;
-
-let simulationDate=new Date();
-
-function auToPx(au){return au*Math.min(cw,ch)*0.035*zoom;}
-
-function hexWithAlpha(hex,a){const r=parseInt(hex.substr(1,2),16);const g=parseInt(hex.substr(3,2),16);const b=parseInt(hex.substr(5,2),16);return `rgba(${r},${g},${b},${a})`;}
-
-// Tooltip
-function showTooltip(text,x,y){tooltip.style.left=(x+14)+'px';tooltip.style.top=(y+14)+'px';tooltip.innerHTML=text;tooltip.style.display='block';}
-function hideTooltip(){tooltip.style.display='none';}
-
-function drawStars(){
-  for(const s of stars){
-    s.a+=(Math.random()-0.5)*s.flick;
-    s.a=Math.max(0.15,Math.min(1,s.a));
-    ctx.globalAlpha=s.a;
-    ctx.beginPath();
-    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-    ctx.fillStyle='#ffffff';
-    ctx.fill();
-  }
-  ctx.globalAlpha=1;
-}
-
-let last=performance.now();
-function draw(now){
-  const dt=Math.min(50,now-last)/1000;
-  last=now;
-  ctx.clearRect(0,0,cw,ch);
-  drawStars();
-
-  // Sun
-  const centerX=cw/2,centerY=ch/2;
-  ctx.save();
-  ctx.shadowBlur=30; ctx.shadowColor='rgba(255,180,0,0.6)';
-  ctx.beginPath(); ctx.arc(centerX,centerY,16,0,Math.PI*2); ctx.fillStyle='#ffcc33'; ctx.fill();
-  ctx.restore();
-
-  // Offset for centering
-  let offsetX=0, offsetY=0;
-  if(centerOn!=='sun'){
-    const target=planets.find(p=>p.name.toLowerCase()===centerOn);
-    if(target){const r=auToPx(target.dist); offsetX=-r*Math.cos(target.angle); offsetY=-r*Math.sin(target.angle);}
-  }
-
-  // Planet positions
-  planets.forEach((p,i)=>{
-    // Update angle based on timeline
-    if(!paused){
-      const daysOffset=parseInt(timelineInput.value)||0;
-      const speedFactor=(p.speed*0.0172024); // convert AU/day approx
-      p.angle += speedFactor*timeScale*dt;
-      p.angle += speedFactor*daysOffset*0; // timeline overrides
+    function playMusic(){
+      bgMusic.play().catch(e => console.log('Music blocked:', e));
+      window.removeEventListener('click', playMusic);
+      window.removeEventListener('keydown', playMusic);
     }
-    const r=auToPx(p.dist);
-    const x=centerX+r*Math.cos(p.angle)+offsetX;
-    const y=centerY+r*Math.sin(p.angle)+offsetY;
+    window.addEventListener('click', playMusic);
+    window.addEventListener('keydown', playMusic);
 
-    // Trails
-    if(showTrails){
-      const tr=trails[i]; tr.push({x,y}); if(tr.length>maxTrailPoints)tr.shift();
-      ctx.beginPath(); tr.forEach((t,j)=>j===0?ctx.moveTo(t.x,t.y):ctx.lineTo(t.x,t.y));
-      const grad=ctx.createLinearGradient(centerX,centerY,x,y);
-      grad.addColorStop(0,'rgba(255,255,255,0.02)');
-      grad.addColorStop(1,hexWithAlpha(p.color,0.9));
-      ctx.strokeStyle=grad; ctx.lineWidth=Math.max(1,p.size*0.6); ctx.stroke();
+    musicVolume.addEventListener('input', ()=> bgMusic.volume = parseFloat(musicVolume.value));
+
+    // --- Resize ---
+    let cw=0, ch=0;
+    function resize(){
+      const rect = sidebar.getBoundingClientRect();
+      const sidebarW = rect.width || parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-w')) || 320;
+      cw = canvas.width = Math.max(300, window.innerWidth - sidebarW);
+      ch = canvas.height = window.innerHeight;
+      if(window.innerWidth <= 700){ cw=canvas.width=window.innerWidth; ch=canvas.height=Math.max(300,window.innerHeight-88); }
+      canvas.style.width=cw+'px';
+      canvas.style.height=ch+'px';
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // --- Stars ---
+    const stars = [];
+    function generateStars(n=250){
+      stars.length=0;
+      for(let i=0;i<n;i++) stars.push({x:Math.random()*cw,y:Math.random()*ch,r:Math.random()*1.4+0.2,a:Math.random()*0.8+0.2,flick:Math.random()*0.02});
+    }
+    generateStars(360);
+
+    function drawStars(){
+      for(const s of stars){
+        s.a += (Math.random()-0.5)*s.flick;
+        s.a = Math.max(0.15, Math.min(1,s.a));
+        ctx.globalAlpha = s.a;
+        ctx.beginPath();
+        ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+      }
+      ctx.globalAlpha=1;
     }
 
-    // Planet body
-    ctx.beginPath(); ctx.arc(x,y,p.size,0,Math.PI*2); ctx.fillStyle=p.color; ctx.fill();
+    // --- Planets ---
+    const planets = [
+      {name:'Mercury', color:'#bdbdbd', dist:0.39, size:3.2},
+      {name:'Venus', color:'#f1c40f', dist:0.72, size:5.8},
+      {name:'Earth', color:'#2ea3ff', dist:1.00, size:6.6},
+      {name:'Mars', color:'#ff6b3d', dist:1.52, size:5.4},
+      {name:'Jupiter', color:'#e6caa3', dist:5.20, size:12.2, rings:true},
+      {name:'Saturn', color:'#f0d7b8', dist:9.58, size:10.5, rings:true},
+      {name:'Uranus', color:'#7fe0d8', dist:19.2, size:8.8},
+      {name:'Neptune', color:'#547aff', dist:30.05, size:8.6}
+    ];
 
-    if(p.rings){
-      ctx.save(); ctx.translate(x,y); ctx.rotate(0.45);
-      ctx.beginPath(); ctx.ellipse(0,0,p.size*2.6,p.size*1.0,0,0,Math.PI*2);
-      ctx.strokeStyle='rgba(210,180,140,0.65)'; ctx.lineWidth=2.6; ctx.stroke(); ctx.restore();
+    const orbitalPeriods = { Mercury:88, Venus:225, Earth:365, Mars:687, Jupiter:4333, Saturn:10759, Uranus:30687, Neptune:60190 };
+
+    let paused=false, timeScale=parseFloat(timeScaleInput.value)||1, zoom=parseFloat(zoomInput.value)||1;
+    let showOrbits = showOrbitsInput.checked, showTrails = showTrailsInput.checked, showLabels = showLabelsInput.checked;
+    let centerOn=centerSelect.value;
+
+    planets.forEach(p=>p.angle=Math.random()*Math.PI*2);
+    const trails = planets.map(()=>[]);
+    const maxTrailPoints=120;
+
+    let simDate = new Date();
+    const startDate = new Date(simDate);
+
+    function daysSinceStart(){ return (simDate - startDate)/(1000*60*60*24); }
+    function updatePlanetAngles(){ 
+      const days = daysSinceStart();
+      planets.forEach(p=>{
+        const period = orbitalPeriods[p.name];
+        p.angle = 2*Math.PI*((days % period)/period);
+      });
     }
 
-    if(showLabels){ctx.font='12px Poppins,sans-serif'; ctx.fillStyle='rgba(230,240,255,0.9)'; ctx.fillText(p.name,x+p.size+6,y+4);}
-    p.screenX=x; p.screenY=y;
-  });
+    function auToPx(au){ return au * Math.min(cw,ch) * 0.035 * zoom; }
+    function hexWithAlpha(hex,a){ const r=parseInt(hex.substr(1,2),16), g=parseInt(hex.substr(3,2),16), b=parseInt(hex.substr(5,2),16); return `rgba(${r},${g},${b},${a})`; }
 
-  // Update date display
-  const displayDate=new Date();
-  displayDate.setDate(displayDate.getDate()+parseInt(timelineInput.value||0));
-  dateDisplay.textContent=displayDate.toDateString();
+    function showTooltip(text,x,y){ tooltip.style.left=(x+14)+'px'; tooltip.style.top=(y+14)+'px'; tooltip.innerHTML=text; tooltip.style.display='block'; }
+    function hideTooltip(){ tooltip.style.display='none'; }
 
-  scaleValue.textContent=timeScale.toFixed(1)+'x'; zoomValue.textContent=zoom.toFixed(2);
-  requestAnimationFrame(draw);
-}
+    // --- Draw Loop ---
+    let last = performance.now();
+    function draw(now){
+      const dt=(now-last)/1000; last=now;
+      if(!paused) simDate=new Date(simDate.getTime()+dt*1000*86400*timeScale);
+      updatePlanetAngles();
+      dateTime.textContent = simDate.toDateString() + ' ' + simDate.toLocaleTimeString();
 
-requestAnimationFrame(draw);
+      ctx.clearRect(0,0,cw,ch);
+      drawStars();
 
-// Controls
-pauseCheckbox.addEventListener('change',()=>paused=pauseCheckbox.checked);
-timeScaleInput.addEventListener('input',()=>{timeScale=parseFloat(timeScaleInput.value); scaleValue.textContent=timeScale.toFixed(1)+'x';});
-zoomInput.addEventListener('input',()=>{zoom=parseFloat(zoomInput.value); zoomValue.textContent=zoom.toFixed(2);});
-showOrbitsInput.addEventListener('change',()=>showOrbits=showOrbitsInput.checked);
-showTrailsInput.addEventListener('change',()=>showTrails=showTrailsInput.checked);
-showLabelsInput.addEventListener('change',()=>showLabels=showLabelsInput.checked);
-centerSelect.addEventListener('change',()=>centerOn=centerSelect.value);
-timelineInput.addEventListener('input',()=>{});
+      const centerX=cw/2, centerY=ch/2;
+      let offsetX=0, offsetY=0;
+      if(centerOn!=='sun'){
+        const target = planets.find(p=>p.name.toLowerCase()===centerOn);
+        if(target){ offsetX = centerX - (centerX + auToPx(target.dist)*Math.cos(target.angle)); offsetY = centerY - (centerY + auToPx(target.dist)*Math.sin(target.angle)); }
+      }
 
-resetBtn.addEventListener('click',()=>{
-  timeScaleInput.value=1; timeScale=1; scaleValue.textContent='1.0x';
-  zoomInput.value=1; zoom=1; zoomValue.textContent='1.00';
-  showTrailsInput.checked=false; showTrails=false; trails.forEach(t=>t.length=0);
-  centerSelect.value='sun'; centerOn='sun';
-  timelineInput.value=0;
-});
+      // Sun
+      const sunSize=16*zoom;
+      ctx.beginPath();
+      ctx.arc(centerX+offsetX, centerY+offsetY, sunSize,0,Math.PI*2);
+      ctx.fillStyle='#ffdd33'; ctx.shadowBlur=20; ctx.shadowColor='#ffdd33'; ctx.fill(); ctx.shadowBlur=0;
 
-snapshotBtn.addEventListener('click',()=>{
-  const link=document.createElement('a'); link.download='solar-snapshot.png'; link.href=canvas.toDataURL('image/png'); link.click();
-});
+      planets.forEach((p,i)=>{
+        const r = auToPx(p.dist);
+        if(showOrbits){ ctx.beginPath(); ctx.ellipse(centerX+offsetX,centerY+offsetY,r,r*0.98,0,0,Math.PI*2); ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.lineWidth=1; ctx.stroke(); }
 
-canvas.addEventListener('mousemove',(e)=>{
-  const rect=canvas.getBoundingClientRect();
-  const mouseX=e.clientX-rect.left; const mouseY=e.clientY-rect.top;
-  let found=false;
-  for(const p of planets){
-    const dx=mouseX-p.screenX, dy=mouseY-p.screenY;
-    if(dx*dx+dy*dy<=(p.size+6)*(p.size+6)){showTooltip(`${p.name} — ${p.dist} AU`,e.clientX,e.clientY); found=true; break;}
-  }
-  if(!found) hideTooltip();
-});
-canvas.addEventListener('mouseleave',hideTooltip);
+        const x = centerX + r*Math.cos(p.angle) + offsetX;
+        const y = centerY + r*Math.sin(p.angle) + offsetY;
 
-window.addEventListener('keydown',(e)=>{
-  if(e.code==='Space'){e.preventDefault(); paused=!paused; pauseCheckbox.checked=paused;}
-  if(e.key==='+'||e.key==='='){zoom=Math.min(3,zoom+0.05); zoomInput.value=zoom; zoomValue.textContent=zoom.toFixed(2);}
-  if(e.key==='-'){zoom=Math.max(0.3,zoom-0.05); zoomInput.value=zoom; zoomValue.textContent=zoom.toFixed(2);}
-  if(e.key.toLowerCase()==='s'){const link=document.createElement('a'); link.download='solar-snapshot.png'; link.href=canvas.toDataURL('image/png'); link.click();}
-});
-</script>
+        if(showTrails){
+          const tr=trails[i]; tr.push({x,y}); if(tr.length>maxTrailPoints) tr.shift();
+          ctx.beginPath(); tr.forEach((t,j)=>j===0?ctx.moveTo(t.x,t.y):ctx.lineTo(t.x,t.y));
+          const grad = ctx.createLinearGradient(centerX,centerY,x,y);
+          grad.addColorStop(0,'rgba(255,255,255,0.02)');
+          grad.addColorStop(1, hexWithAlpha(p.color,0.9));
+          ctx.strokeStyle = grad; ctx.lineWidth=Math.max(1,p.size*0.6); ctx.stroke();
+        }
+
+        ctx.beginPath(); ctx.arc(x,y,p.size,0,Math.PI*2); ctx.fillStyle=p.color; ctx.fill();
+
+        if(p.rings){ ctx.save(); ctx.translate(x,y); ctx.rotate(0.45); ctx.beginPath(); ctx.ellipse(0,0,p.size*2.6,p.size*1.0,0,0,Math.PI*2); ctx.strokeStyle='rgba(210,180,140,0.65)'; ctx.lineWidth=2.6; ctx.stroke(); ctx.restore(); }
+
+        if(showLabels){ ctx.font='12px Poppins, sans-serif'; ctx.fillStyle='rgba(230,240,255,0.9)'; ctx.fillText(p.name,x+p.size+6,y+4); }
+
+        p.screenX=x; p.screenY=y;
+      });
+
+      scaleValue.textContent = timeScale.toFixed(1)+'x';
+      zoomValue.textContent = zoom.toFixed(2);
+      requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+
+    // --- Event Listeners ---
+    pauseCheckbox.addEventListener('change',()=>paused=pauseCheckbox.checked);
+    timeScaleInput.addEventListener('input',()=>timeScale=parseFloat(timeScaleInput.value));
+    zoomInput.addEventListener('input',()=>zoom=parseFloat(zoomInput.value));
+    showOrbitsInput.addEventListener('change',()=>showOrbits=showOrbitsInput.checked);
+    showTrailsInput.addEventListener('change',()=>showTrails=showTrailsInput.checked);
+    showLabelsInput.addEventListener('change',()=>showLabels=showLabelsInput.checked);
+    centerSelect.addEventListener('change',()=>centerOn=centerSelect.value);
+
+    resetBtn.addEventListener('click',()=>{
+      zoom=1; zoomInput.value=1;
+      timeScale=1; timeScaleInput.value=1;
+      paused=false; pauseCheckbox.checked=false;
+      centerOn='sun'; centerSelect.value='sun';
+    });
+
+    snapshotBtn.addEventListener('click',()=>{
+      const link = document.createElement('a');
+      link.download='solar_system.png';
+      link.href=canvas.toDataURL();
+      link.click();
+    });
+
+    document.addEventListener('keydown', e=>{
+      if(e.code==='Space'){ paused=!paused; pauseCheckbox.checked=paused; }
+      else if(e.key==='+'||e.key==='='){ zoom=Math.min(zoom+0.1,3); zoomInput.value=zoom; }
+      else if(e.key==='-'){ zoom=Math.max(zoom-0.1,0.3); zoomInput.value=zoom; }
+      else if(e.key.toLowerCase()==='s'){ snapshotBtn.click(); }
+    });
+  </script>
 </body>
 </html>
